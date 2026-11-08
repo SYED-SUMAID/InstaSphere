@@ -1,0 +1,17 @@
+# FastAPI application
+fastapi
+uvicorn[standard]
+
+# Database and ORM
+sqlmodel
+psycopg[binary]
+
+# Configuration management
+pydantic-settings
+
+# Image uploads
+python-multipart
+
+# Authentication
+python-jose[cryptography]
+passlib[bcrypt]
