@@ -1,6 +1,7 @@
 from datetime import datetime
 
-from sqlmodel import SQLModel, Field
+from sqlmodel import SQLModel, Field, Relationship
+
 
 
 class Comment(SQLModel, table=True):
@@ -12,17 +13,21 @@ class Comment(SQLModel, table=True):
     text: str
 
     commenter_id: int = Field(
-        foreign_key="user.id"
+        foreign_key="user.id",
+        ondelete="CASCADE",
+        index=True
     )
 
     post_id: int = Field(
-        foreign_key="post.id"
+        foreign_key="post.id",
+        ondelete="CASCADE",
+        index=True
     )
 
-    created_at: datetime = Field(
-        default_factory=datetime.utcnow
-    )
+    created_at: datetime = Field(default_factory=datetime.utcnow)
+    updated_at: datetime = Field(default_factory=datetime.utcnow)
 
-    updated_at: datetime = Field(
-        default_factory=datetime.utcnow
-    )
+    # Relationships
+    commenter: "User" = Relationship(back_populates="comments")
+
+    post: "Post" = Relationship(back_populates="comments")
