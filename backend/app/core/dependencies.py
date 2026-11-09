@@ -51,7 +51,7 @@ def get_current_user(
     # Find user in PostgreSQL
     user = session.get(User, user_id)
 
-    if user is None:
+    if user is None:  
         raise credentials_exception
 
     return user
