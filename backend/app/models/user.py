@@ -1,5 +1,4 @@
-from datetime import datetime
-
+from datetime import datetime, timezone
 from sqlmodel import SQLModel, Field, Relationship
 
 
@@ -17,7 +16,7 @@ class User(SQLModel, table=True):
     bio: str | None = Field(default=None)
     profile_picture: str | None = Field(default=None, max_length=255)
 
-    created_at: datetime = Field(default_factory=datetime.utcnow)
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
     # Relationships
     posts: list["Post"] = Relationship(back_populates="user")

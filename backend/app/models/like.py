@@ -1,5 +1,4 @@
-from datetime import datetime
-
+from datetime import datetime, timezone
 from sqlmodel import SQLModel, Field, Relationship
 
 
@@ -19,7 +18,7 @@ class Like(SQLModel, table=True):
         primary_key=True
     )
 
-    created_at: datetime = Field(default_factory=datetime.utcnow)
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
     # Relationships
     liker: "User" = Relationship(back_populates="likes")

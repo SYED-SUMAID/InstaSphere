@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timezone
 
 from sqlmodel import SQLModel, Field, Relationship
 from sqlalchemy import CheckConstraint
@@ -27,7 +27,7 @@ class Follow(SQLModel, table=True):
         primary_key=True
     )
 
-    created_at: datetime = Field(default_factory=datetime.utcnow)
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
     # Relationships
     follower: "User" = Relationship(
