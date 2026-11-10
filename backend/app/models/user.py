@@ -23,3 +23,32 @@ class User(SQLModel, table=True):
     posts: list["Post"] = Relationship(back_populates="user")
 
     comments: list["Comment"] = Relationship(back_populates="commenter")
+
+
+        # Relationships
+
+    posts: list["Post"] = Relationship(
+        back_populates="user"
+    )
+
+    comments: list["Comment"] = Relationship(
+        back_populates="commenter"
+    )
+
+    likes: list["Like"] = Relationship(
+        back_populates="liker"
+    )
+
+    following: list["Follow"] = Relationship(
+        back_populates="follower",
+        sa_relationship_kwargs={
+            "foreign_keys": "Follow.follower_id"
+        }
+    )
+
+    followers: list["Follow"] = Relationship(
+        back_populates="followed",
+        sa_relationship_kwargs={
+            "foreign_keys": "Follow.followed_id"
+        }
+    )

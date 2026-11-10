@@ -1,7 +1,10 @@
 from fastapi import FastAPI, HTTPException
 from sqlalchemy import text
 from sqlalchemy.exc import SQLAlchemyError
+from sqlmodel import SQLModel
 
+from app.database import engine
+from app import models
 from app.database import engine
 from app.routes.auth import router as auth_router
 

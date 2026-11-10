@@ -3,7 +3,7 @@ from pydantic_settings import BaseSettings
 
 class Settings(BaseSettings):
 
-    DATABASE_URL: str = "postgresql+psycopg://postgres:your_password@localhost:5432/instasphere"
+    DATABASE_URL: str = "postgresql+psycopg://postgres:NewStrongPassword123@localhost:5432/instasphere"
 
     SECRET_KEY: str = "replace-with-your-generated-secret-key"
 
