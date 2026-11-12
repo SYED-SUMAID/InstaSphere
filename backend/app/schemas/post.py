@@ -7,6 +7,9 @@ class PostCreate(BaseModel):
     caption: str | None = None
 
 
+class PostUpdate(BaseModel):
+    caption: str | None = None
+
 class PostRead(BaseModel):
     id: int
     user_id: int

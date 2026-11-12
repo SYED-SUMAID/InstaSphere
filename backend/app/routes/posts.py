@@ -1,4 +1,5 @@
 from pathlib import Path
+from datetime import datetime, timezone
 from uuid import uuid4
 from sqlmodel import select
 from fastapi import (
@@ -11,13 +12,15 @@ from fastapi import (
     status
 )
 from sqlmodel import Session
-
+from app.schemas.post import PostRead, PostUpdate
 from app.database import get_session
 from app.models import Post
 from app.schemas.post import PostRead
 from app.core.dependencies import get_current_user
 from app.models import User
-
+from fastapi import Body
+from app.models import Post, Like
+from sqlalchemy import func
 
 router = APIRouter(prefix="/posts", tags=["Posts"])
 
@@ -103,3 +106,147 @@ def get_post(
         )
 
     return post
+
+@router.delete("/{post_id}")
+def delete_post(
+    post_id: int,
+    current_user: User = Depends(get_current_user),
+    session: Session = Depends(get_session)
+):
+    post = session.get(Post, post_id)
+
+    if not post:
+        raise HTTPException(
+            status_code=404,
+            detail="Post not found"
+        )
+
+    if post.user_id != current_user.id:
+        raise HTTPException(
+            status_code=403,
+            detail="You are not allowed to delete this post"
+        )
+
+    image_file = (BASE_DIR / post.image_path).resolve()
+
+    if UPLOAD_DIR.resolve() in image_file.parents and image_file.is_file():
+        image_file.unlink()
+
+    session.delete(post)
+    session.commit()
+
+    return {"message": "Post deleted successfully"}
+
+
+@router.patch("/{post_id}", response_model=PostRead)
+def update_post(
+    post_id: int,
+    post_data: PostUpdate,
+    current_user: User = Depends(get_current_user),
+    session: Session = Depends(get_session)
+):
+    post = session.get(Post, post_id)
+
+    if not post:
+        raise HTTPException(
+            status_code=404,
+            detail="Post not found"
+        )
+
+    if post.user_id != current_user.id:
+        raise HTTPException(
+            status_code=403,
+            detail="You are not allowed to update this post"
+        )
+
+    if "caption" in post_data.model_fields_set:
+        post.caption = post_data.caption
+
+    post.updated_at = datetime.now(timezone.utc)
+
+    session.add(post)
+    session.commit()
+    session.refresh(post)
+
+    return post
+
+@router.post("/{post_id}/like", status_code=201)
+def like_post(
+    post_id: int,
+    current_user: User = Depends(get_current_user),
+    session: Session = Depends(get_session)
+):
+    post = session.get(Post, post_id)
+
+    if not post:
+        raise HTTPException(
+            status_code=404,
+            detail="Post not found"
+        )
+
+    existing_like = session.get(
+        Like,
+        (current_user.id, post_id)
+    )
+
+    if existing_like:
+        raise HTTPException(
+            status_code=409,
+            detail="You have already liked this post"
+        )
+
+    new_like = Like(
+        liker_id=current_user.id,
+        post_id=post_id
+    )
+
+    session.add(new_like)
+    session.commit()
+
+    return {"message": "Post liked successfully"}
+
+@router.delete("/{post_id}/like")
+def unlike_post(
+    post_id: int,
+    current_user: User = Depends(get_current_user),
+    session: Session = Depends(get_session)
+):
+    existing_like = session.get(
+        Like,
+        (current_user.id, post_id)
+    )
+
+    if not existing_like:
+        raise HTTPException(
+            status_code=404,
+            detail="Like not found"
+        )
+
+    session.delete(existing_like)
+    session.commit()
+
+    return {"message": "Post unliked successfully"}
+
+@router.get("/{post_id}/likes")
+def get_post_likes(
+    post_id: int,
+    session: Session = Depends(get_session)
+):
+    post = session.get(Post, post_id)
+
+    if not post:
+        raise HTTPException(
+            status_code=404,
+            detail="Post not found"
+        )
+
+    likes_count = session.exec(
+        select(func.count())
+        .select_from(Like)
+        .where(Like.post_id == post_id)
+    ).one()
+
+    return {
+        "post_id": post_id,
+        "likes_count": likes_count
+    }
