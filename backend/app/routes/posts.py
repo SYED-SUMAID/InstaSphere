@@ -1,6 +1,6 @@
 from pathlib import Path
 from uuid import uuid4
-
+from sqlmodel import select
 from fastapi import (
     APIRouter,
     Depends,
@@ -78,3 +78,28 @@ async def create_post(
     session.refresh(new_post)
 
     return new_post
+
+@router.get("/", response_model=list[PostRead])
+def get_all_posts(
+    session: Session = Depends(get_session)
+):
+    posts = session.exec(
+        select(Post).order_by(Post.created_at.desc())
+    ).all()
+
+    return posts
+
+@router.get("/{post_id}", response_model=PostRead)
+def get_post(
+    post_id: int,
+    session: Session = Depends(get_session)
+):
+    post = session.get(Post, post_id)
+
+    if not post:
+        raise HTTPException(
+            status_code=404,
+            detail="Post not found"
+        )
+
+    return post

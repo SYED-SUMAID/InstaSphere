@@ -4,10 +4,11 @@ from fastapi import FastAPI, HTTPException
 from sqlalchemy import text
 from sqlalchemy.exc import SQLAlchemyError
 from sqlmodel import SQLModel
-
+from app.routes.posts import router as posts_router
 from app.database import engine
 from app.models import User, Post, Comment, Like, Follow
 from app.routes.auth import router as auth_router
+
 
 
 @asynccontextmanager
@@ -27,6 +28,7 @@ app = FastAPI(
 )
 
 app.include_router(auth_router)
+app.include_router(posts_router)
 
 
 @app.get("/")
